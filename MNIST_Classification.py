@@ -15,13 +15,13 @@ from torchvision import datasets, transforms
 # print(torch.__version__)  # 检查 pytorch 的版本
 
 # 定义一些超参数
-BATCH_SIZE = 32  # batch_size即每批训练的样本数量
+BATCH_SIZE = 16  # batch_size即每批训练的样本数量
 EPOCHS = 100  # 循环次数
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")  # 让torch判断是否使用GPU，即device定义为CUDA或CPU
 
 # 下载 MNIST的数据集
 
-MNIST_DATA = datasets.MNIST('data', train=True, download=False,
+MNIST_DATA = datasets.MNIST('data', train=True, download=True,
                    transform=transforms.Compose([
                        transforms.ToTensor(),  # 图像转化为Tensor
                        transforms.Normalize((0.1307,), (0.3081,))  # 标准化（参数不明）
@@ -37,8 +37,8 @@ test_loader = torch.utils.data.DataLoader(
     batch_size=BATCH_SIZE, shuffle=True)  # shuffle() 方法将序列的所有元素随机排序
 
 
-data_label0, data_label1, data_label2 = eval(input('Please Enter 3 Numbers between 0 and 9 Separated by Commas: '))
-
+# data_label0, data_label1, data_label2 = eval(input('Please Enter 3 Numbers between 0 and 9 Separated by Commas: '))
+data_label0, data_label1, data_label2 = 0,0,1
 # 筛选标签为0/1的数据
 
 # 定义自己的 Dataset
@@ -182,19 +182,20 @@ def calFrac(device):
     for batch_idx, (data, target) in enumerate(train_loader1):
         data, target = data.to(device), target.to(device)  # CPU转GPU
         output = net2(data)
-        arr1[batch_idx] = (loss_func(output, target) - arr1[batch_idx])/(loss1 - loss0)
+        arr1[batch_idx] = ((loss_func(output, target) / arr1[batch_idx])/(loss1 / loss0))
 
 
     for batch_idx, (data, target) in enumerate(train_loader2):
         data, target = data.to(device), target.to(device)  # CPU转GPU
         output = net2(data)
-        arr2[batch_idx] = (loss_func(output, target) - arr2[batch_idx])/(loss1 - loss0)
+        arr2[batch_idx] = ((loss_func(output, target) / arr2[batch_idx])/(loss1 / loss0))
 
 
     plt.hist(arr1, bins=10, color='gold', alpha=0.7,
              label='the relative similarity of {} and {}'.format(data_label0, data_label1))
     plt.hist(arr2, bins=10, color='salmon', alpha=0.7,
              label='the relative similarity of {} and {}'.format(data_label0, data_label2))
+    print(numpy.mean(arr1)/numpy.mean(arr2))
     plt.legend()
     plt.pause(0.1)
     plt.clf()
